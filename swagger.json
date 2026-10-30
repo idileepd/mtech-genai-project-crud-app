@@ -1,0 +1,215 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Fruit Market API",
+    "description": "A simple Express CRUD demo with fake JSON data — no login, no auth. Full Create/Read/Update/Delete on products. **Note:** data lives in memory, so changes reset when the server restarts.",
+    "version": "1.0.0",
+    "contact": { "name": "M.Tech demo" }
+  },
+  "servers": [{ "url": "http://localhost:3001", "description": "Local dev server" }],
+  "tags": [
+    { "name": "products", "description": "CRUD operations on market products" },
+    { "name": "meta", "description": "Health, stats and category info" }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["meta"],
+        "summary": "Home page",
+        "responses": { "200": { "description": "HTML home page with links" } }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["meta"],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "example": { "ok": true, "service": "fruit-market-api" } } }
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "tags": ["products"],
+        "summary": "List products (with filters)",
+        "description": "Returns all products. Supports filters: category, search, minPrice, maxPrice, inSeason.",
+        "parameters": [
+          { "name": "category", "in": "query", "schema": { "type": "string", "enum": ["fruit", "vegetable", "herb"] }, "example": "fruit" },
+          { "name": "search", "in": "query", "schema": { "type": "string" }, "example": "mango" },
+          { "name": "minPrice", "in": "query", "schema": { "type": "number" }, "example": 1 },
+          { "name": "maxPrice", "in": "query", "schema": { "type": "number" }, "example": 3 },
+          { "name": "inSeason", "in": "query", "schema": { "type": "boolean" }, "example": true }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of products",
+            "content": {
+              "application/json": {
+                "example": { "count": 12, "products": [{ "id": 1, "name": "Alphonso Mango" }] }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["products"],
+        "summary": "Create a product",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProductInput" },
+              "example": {
+                "name": "Dragon Fruit",
+                "category": "fruit",
+                "price": 5.49,
+                "unit": "each",
+                "stock": 30,
+                "origin": "Vietnam",
+                "emoji": "🐉",
+                "inSeason": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Product" } } }
+          },
+          "400": { "description": "Validation error" }
+        }
+      }
+    },
+    "/products/categories": {
+      "get": {
+        "tags": ["meta"],
+        "summary": "List categories with product counts",
+        "responses": {
+          "200": {
+            "description": "Categories",
+            "content": {
+              "application/json": {
+                "example": { "categories": [{ "name": "fruit", "count": 7 }, { "name": "vegetable", "count": 4 }, { "name": "herb", "count": 1 }] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/stats": {
+      "get": {
+        "tags": ["meta"],
+        "summary": "Market statistics",
+        "responses": {
+          "200": {
+            "description": "Stats",
+            "content": {
+              "application/json": {
+                "example": {
+                  "totalProducts": 12,
+                  "inSeasonProducts": 8,
+                  "averagePrice": 2.74,
+                  "totalInventoryValue": 1319.68,
+                  "cheapest": "Cavendish Banana",
+                  "priciest": "Alphonso Mango"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "tags": ["products"],
+        "summary": "Get one product by id",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 1 }],
+        "responses": {
+          "200": { "description": "Product", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Product" } } } },
+          "400": { "description": "id must be a positive integer" },
+          "404": { "description": "Product not found" }
+        }
+      },
+      "put": {
+        "tags": ["products"],
+        "summary": "Replace a product (all fields required)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 1 }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProductInput" } } }
+        },
+        "responses": {
+          "200": { "description": "Updated product", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Product" } } } },
+          "400": { "description": "Validation error" },
+          "404": { "description": "Product not found" }
+        }
+      },
+      "patch": {
+        "tags": ["products"],
+        "summary": "Partially update a product",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 1 }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "price": { "type": "number" }, "stock": { "type": "integer" }, "inSeason": { "type": "boolean" } } },
+              "example": { "price": 3.99, "stock": 150 }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Updated product", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Product" } } } },
+          "400": { "description": "Validation error" },
+          "404": { "description": "Product not found" }
+        }
+      },
+      "delete": {
+        "tags": ["products"],
+        "summary": "Delete a product",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 12 }],
+        "responses": {
+          "204": { "description": "Deleted (no body)" },
+          "400": { "description": "id must be a positive integer" },
+          "404": { "description": "Product not found" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "category": { "type": "string", "enum": ["fruit", "vegetable", "herb"] },
+          "price": { "type": "number", "format": "float" },
+          "unit": { "type": "string" },
+          "stock": { "type": "integer" },
+          "origin": { "type": "string" },
+          "emoji": { "type": "string" },
+          "inSeason": { "type": "boolean" }
+        },
+        "example": { "id": 1, "name": "Alphonso Mango", "category": "fruit", "price": 4.99, "unit": "kg", "stock": 120, "origin": "India", "emoji": "🥭", "inSeason": true }
+      },
+      "ProductInput": {
+        "type": "object",
+        "required": ["name", "category", "price", "unit"],
+        "properties": {
+          "name": { "type": "string", "minLength": 2, "example": "Kiwi" },
+          "category": { "type": "string", "enum": ["fruit", "vegetable", "herb"], "example": "fruit" },
+          "price": { "type": "number", "minimum": 0.01, "example": 2.79 },
+          "unit": { "type": "string", "example": "kg" },
+          "stock": { "type": "integer", "minimum": 0, "example": 40 },
+          "origin": { "type": "string", "example": "New Zealand" },
+          "emoji": { "type": "string", "example": "🥝" },
+          "inSeason": { "type": "boolean", "example": true }
+        }
+      }
+    }
+  }
+}

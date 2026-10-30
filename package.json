@@ -1,0 +1,15 @@
+{
+  "name": "mtech-genai-project-crud-app",
+  "version": "1.0.0",
+  "description": "Fruit Market API — a simple Express CRUD demo with fake JSON data, no login required. Swagger UI at /docs.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "keywords": ["crud", "demo", "express", "swagger"],
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
